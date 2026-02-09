@@ -1,0 +1,91 @@
+{
+  "runtime": "bun 1.1+",
+  "framework": "next 14.2.13",
+  "language": "typescript 5.5+",
+  "frontend": {
+    "tailwindcss": "3.4.10",
+    "shadcn/ui": "latest",
+    "react-hook-form": "7.53.0",
+    "zod": "3.23.8",
+    "framer-motion": "11.5.4",
+    "lucide-react": "0.439.0",
+    "sonner": "1.5.0",
+    "@tanstack/react-query": "5.56.2",
+    "zustand": "4.5.5"
+  },
+  "backend": {
+    "prisma": "5.20.0",
+    "@prisma/client": "5.20.0",
+    "next-auth": "5.0.0-beta.22",
+    "@auth/prisma-adapter": "2.5.3",
+    "stripe": "16.12.0",
+    "resend": "4.0.0",
+    "react-email": "3.0.1",
+    "socket.io": "4.8.0",
+    "socket.io-client": "4.8.0",
+    "@socket.io/redis-adapter": "8.3.0"
+  },
+  "maps": {
+    "@vis.gl/react-google-maps": "1.1.0"
+  },
+  "testing": {
+    "vitest": "2.1.1",
+    "@testing-library/react": "16.0.1",
+    "@playwright/test": "1.47.2"
+  },
+  "utilities": {
+    "date-fns": "3.6.0",
+    "uuid": "10.0.0",
+    "libphonenumber-js": "1.11.9",
+    "bcryptjs": "2.4.3",
+    "jsonwebtoken": "9.0.2"
+  },
+  "name": "joeymovespro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md}\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.11.1",
+    "@prisma/client": "^5.10.2",
+    "leaflet": "^1.9.4",
+    "next": "^16.1.6",
+    "next-auth": "^4.24.13",
+    "prisma": "^5.10.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-leaflet": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "25.2.2",
+    "@types/react": "19.2.13",
+    "typescript": "5.9.3"
+  }
+}

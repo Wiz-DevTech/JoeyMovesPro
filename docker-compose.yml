@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: joeymoves-db
+    environment:
+      POSTGRES_USER: joeymoves
+      POSTGRES_PASSWORD: your-secure-password
+      POSTGRES_DB: joeymoves_prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: joeymoves-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: joeymoves-app
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql://joeymoves:your-secure-password@postgres:5432/joeymoves_prod
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

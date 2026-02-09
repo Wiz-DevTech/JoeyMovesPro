@@ -1,0 +1,558 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== USERS & AUTH =====
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  phone         String?
+  image         String?
+  password      String?
+  
+  role          UserRole  @default(CUSTOMER)
+  status        UserStatus @default(ACTIVE)
+  isActive      Boolean   @default(true)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  
+  accounts      Account[]
+  sessions      Session[]
+  jobs          Job[]     @relation("CustomerJobs")
+  driverJobs    Job[]     @relation("DriverJobs")
+  chatMessages  ChatMessage[]
+  notifications Notification[]
+  driverProfile DriverProfile?
+  
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+enum UserRole {
+  CUSTOMER
+  DRIVER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ===== DRIVER PROFILES =====
+
+model DriverProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  
+  licenseNumber   String?
+  licenseState    String?
+  licenseExpiry   DateTime?
+  
+  vehicleType     String?
+  vehicleModel    String?
+  vehiclePlate    String?
+  vehicleCapacity String?
+  
+  currentStatus   DriverStatus @default(OFFLINE)
+  availableFrom   DateTime?
+  availableUntil  DateTime?
+  
+  rating          Float    @default(5.0)
+  completedJobs   Int      @default(0)
+  totalEarnings   Float    @default(0)
+  
+  currentLat      Float?
+  currentLng      Float?
+  lastLocationUpdate DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([currentStatus])
+  @@map("driver_profiles")
+}
+
+enum DriverStatus {
+  OFFLINE
+  AVAILABLE
+  HEADING_TO_PICKUP
+  AT_PICKUP
+  IN_TRANSIT
+  AT_DROPOFF
+  BREAK
+  BUSY
+}
+
+// ===== JOBS =====
+
+model Job {
+  id              String    @id @default(cuid())
+  jobNumber       String    @unique
+  
+  customerId      String
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  
+  driverId        String?
+  driverName      String?
+  
+  status          JobStatus @default(PENDING)
+  moveType        MoveType  @default(STANDARD)
+  
+  pickupAddress   String
+  pickupLat       Float?
+  pickupLng       Float?
+  pickupCity      String?
+  pickupState     String?
+  pickupZip       String?
+  
+  dropoffAddress  String
+  dropoffLat      Float?
+  dropoffLng      Float?
+  dropoffCity     String?
+  dropoffState    String?
+  dropoffZip      String?
+  
+  scheduledDate   DateTime?
+  scheduledTime   String?
+  estimatedDuration Float?
+  
+  estimatedTotal  Float     @default(0)
+  actualTotal     Float     @default(0)
+  depositAmount   Float     @default(50)
+  depositPaid     Boolean   @default(false)
+  
+  notes           String?
+  specialItems    String?
+  
+  cancelledAt     DateTime?
+  cancelReason    String?
+  cancelledBy     String?
+  
+  completedAt     DateTime?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  customer        User      @relation("CustomerJobs", fields: [customerId], references: [id])
+  driver          User?     @relation("DriverJobs", fields: [driverId], references: [id])
+  pricing         JobPricing?
+  invoice         Invoice?
+  chatMessages    ChatMessage[]
+  locations       DriverLocation[]
+  statusHistory   JobStatusHistory[]
+  
+  @@index([customerId])
+  @@index([driverId])
+  @@index([status])
+  @@index([scheduledDate])
+  @@map("jobs")
+}
+
+enum JobStatus {
+  PENDING
+  CONFIRMED
+  SCHEDULED
+  HEADING_TO_PICKUP
+  AT_PICKUP
+  LOADING
+  IN_TRANSIT
+  AT_DROPOFF
+  UNLOADING
+  COMPLETED
+  INVOICED
+  PAID
+  CANCELLED
+}
+
+enum MoveType {
+  STANDARD
+  HEAVY
+  COMMERCIAL
+  LONG_DISTANCE
+}
+
+model JobStatusHistory {
+  id          String    @id @default(cuid())
+  jobId       String
+  status      JobStatus
+  changedBy   String
+  notes       String?
+  createdAt   DateTime  @default(now())
+  
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@index([jobId])
+  @@map("job_status_history")
+}
+
+// ===== PRICING =====
+
+model JobPricing {
+  id                String  @id @default(cuid())
+  jobId             String  @unique
+  
+  laborHoursEst     Float   @default(0)
+  laborHoursActual  Float   @default(0)
+  laborRate         Float   @default(100)
+  minLabor          Float   @default(200)
+  
+  mileageEst        Float   @default(0)
+  mileageActual     Float   @default(0)
+  mileageRate       Float   @default(1.5)
+  
+  truckSize         TruckSize?
+  truckFee          Float   @default(0)
+  ownTruck          Boolean @default(false)
+  
+  hasStairs         Boolean @default(false)
+  stairsFee         Float   @default(50)
+  stairsFlights     Int     @default(0)
+  
+  hasAssembly       Boolean @default(false)
+  assemblyCount     Int     @default(0)
+  assemblyFee       Float   @default(0)
+  assemblyRate      Float   @default(25)
+  
+  hasDisassembly    Boolean @default(false)
+  disassemblyCount  Int     @default(0)
+  disassemblyFee    Float   @default(0)
+  
+  hasPacking        Boolean @default(false)
+  packingFee        Float   @default(0)
+  
+  hasHeavyItems     Boolean @default(false)
+  heavyFee          Float   @default(0)
+  heavyItemsList    String?
+  
+  insuranceLevel    String  @default("standard")
+  insuranceFee      Float   @default(0)
+  
+  discountCode      String?
+  discountAmount    Float   @default(0)
+  discountPercent   Float   @default(0)
+  
+  taxRate           Float   @default(0.07)
+  taxAmount         Float   @default(0)
+  
+  subtotal          Float   @default(0)
+  totalEstimated    Float   @default(0)
+  totalActual       Float   @default(0)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  job               Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@map("job_pricing")
+}
+
+enum TruckSize {
+  SMALL
+  MEDIUM
+  LARGE
+  XLARGE
+}
+
+// ===== INVOICES & PAYMENTS =====
+
+model Invoice {
+  id              String    @id @default(cuid())
+  invoiceNumber   String    @unique
+  jobId           String    @unique
+  
+  subtotal        Float     @default(0)
+  taxAmount       Float     @default(0)
+  total           Float     @default(0)
+  
+  depositAmount   Float     @default(50)
+  depositPaid     Boolean   @default(false)
+  depositPaidAt   DateTime?
+  depositPaymentId String?
+  
+  finalAmount     Float     @default(0)
+  finalPaid       Boolean   @default(false)
+  finalPaidAt     DateTime?
+  finalPaymentId  String?
+  
+  paymentMethod   PaymentMethod?
+  paymentStatus   PaymentStatus @default(PENDING)
+  
+  status          InvoiceStatus @default(DRAFT)
+  sentAt          DateTime?
+  viewedAt        DateTime?
+  
+  dueDate         DateTime?
+  
+  notes           String?
+  terms           String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  finalizedAt     DateTime?
+  
+  job             Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  payments        Payment[]
+  
+  @@index([jobId])
+  @@index([status])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  STRIPE
+  PAYPAL
+  CASHAPP
+  VENMO
+  CASH
+  CHECK
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  invoiceId       String
+  
+  amount          Float
+  currency        String        @default("usd")
+  
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  
+  stripePaymentId String?
+  paypalOrderId   String?
+  
+  metadata        String?
+  receiptUrl      String?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  processedAt     DateTime?
+  
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  @@index([invoiceId])
+  @@index([stripePaymentId])
+  @@map("payments")
+}
+
+// ===== TRACKING =====
+
+model DriverLocation {
+  id          String   @id @default(cuid())
+  driverId    String
+  jobId       String
+  
+  lat         Float
+  lng         Float
+  accuracy    Float?
+  heading     Float?
+  speed       Float?
+  
+  status      DriverStatus
+  
+  createdAt   DateTime @default(now())
+  
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@index([driverId])
+  @@index([jobId])
+  @@map("driver_locations")
+}
+
+// ===== CHAT =====
+
+model ChatMessage {
+  id          String      @id @default(cuid())
+  jobId       String?
+  senderId    String
+  senderRole  UserRole
+  
+  message     String
+  messageType MessageType @default(TEXT)
+  
+  isAiReply   Boolean     @default(false)
+  aiModel     String?
+  
+  attachments String?
+  
+  isRead      Boolean     @default(false)
+  readAt      DateTime?
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  sender      User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  job         Job?        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@index([jobId])
+  @@index([senderId])
+  @@map("chat_messages")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+  NOTIFICATION
+}
+
+// ===== NOTIFICATIONS =====
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  
+  type        NotificationType
+  title       String
+  message     String
+  
+  entityType  String?
+  entityId    String?
+  
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+  
+  actionUrl   String?
+  actionLabel String?
+  
+  createdAt   DateTime         @default(now())
+  
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  JOB_CREATED
+  JOB_ASSIGNED
+  JOB_STATUS_UPDATE
+  DRIVER_ARRIVING
+  DRIVER_ARRIVED
+  JOB_COMPLETED
+  INVOICE_READY
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  MESSAGE_RECEIVED
+  SYSTEM_ALERT
+}
+
+// ===== SYSTEM SETTINGS =====
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  type        String   @default("string")
+  category    String   @default("general")
+  description String?
+  isPublic    Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([key])
+  @@map("system_settings")
+}
+
+// ===== AUDIT LOG =====
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  entity      String
+  entityId    String
+  changes     String?
+  metadata    String?
+  ipAddress   String?
+  userAgent   String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}

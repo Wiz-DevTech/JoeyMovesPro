@@ -1,0 +1,131 @@
+[00:00:17.776] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:18.108] Server  LOG     ✓ Ready in 17.5s
+[00:00:20.117] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:20.905] Server  ERROR   ⨯ ./src/lib/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
+[00:00:20.920] Browser ERROR   ./src/lib/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
+[00:00:21.293] Server  ERROR   ⨯ ./src/lib/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
+[00:00:21.359] Browser ERROR   ./src/lib/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
+[00:00:22.341] Browser ERROR   ./src/lib/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
+[00:00:22.507] Server  ERROR   ⨯ ./src/lib/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
+[00:00:22.653] Browser ERROR   ./src/lib/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
+[00:00:22.847] Browser ERROR   [next-auth][error][CLIENT_FETCH_ERROR] 
+https://next-auth.js.org/errors#client_fetch_error Unexpected token '<', "<!DOCTYPE "... is not valid JSON {"error":{"message":"Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON","name":"SyntaxError","stack":"SyntaxError: Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON"},"message":"Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON","url":"/api/auth/session"}
+[00:00:23.198] Server  LOG     ○ Compiling /_error ...
+[00:00:23.251] Browser ERROR   uncaughtError: Error: Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
+[00:00:23.356] Browser ERROR   ./src/lib/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+  4 | import GoogleProvider from "next-auth/providers/google";
+  5 | import { prisma } from "./db";
+> 6 | import bcrypt from "bcryptjs";
+    | ^
+  7 | import { UserRole } from "@prisma/client";
+  8 |
+  9 | export const authOptions: NextAuthOptions = {
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/api/auth/[...nextauth]/route.ts
