@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
+import L from "leaflet";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface Driver {
   id: string;
@@ -23,43 +24,36 @@ interface FleetMapProps {
   center?: { lat: number; lng: number };
 }
 
+const markerIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 export function FleetMap({ drivers, center }: FleetMapProps) {
-  const defaultCenter = center || { lat: 28.0339, lng: -82.4497 }; // Spring Hill, FL
+  const defaultCenter: [number, number] = center
+    ? [center.lat, center.lng]
+    : [28.0339, -82.4497];
 
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-      <Map
-        defaultCenter={defaultCenter}
-        defaultZoom={12}
-        mapId={process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID}
-        className="w-full h-full"
-      >
-        {drivers.map((driver) => (
-          <AdvancedMarker
-            key={driver.id}
-            position={{ lat: driver.lat, lng: driver.lng }}
-          >
-            <Pin
-              background={getStatusColor(driver.status)}
-              borderColor="#fff"
-              glyphColor="#fff"
-            />
-          </AdvancedMarker>
-        ))}
-      </Map>
-    </APIProvider>
-  );
-}
+    <MapContainer center={defaultCenter} zoom={12} className="w-full h-full rounded-lg">
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
 
-function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    AVAILABLE: "#22c55e",
-    HEADING_TO_PICKUP: "#eab308",
-    AT_PICKUP: "#f59e0b",
-    IN_TRANSIT: "#3b82f6",
-    AT_DROPOFF: "#8b5cf6",
-    OFFLINE: "#64748b",
-    BUSY: "#ef4444",
-  };
-  return colors[status] || colors.OFFLINE;
+      {drivers.map((driver) => (
+        <Marker key={driver.id} position={[driver.lat, driver.lng]} icon={markerIcon}>
+          <Popup>
+            <p className="font-semibold">{driver.name}</p>
+            <p>Status: {driver.status}</p>
+            {driver.currentJob ? <p>Active Job: #{driver.currentJob.id.slice(-6)}</p> : null}
+          </Popup>
+        </Marker>
+      ))}
+    </MapContainer>
+  );
 }

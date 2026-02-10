@@ -1,74 +1,97 @@
-import { Loader } from "@googlemaps/js-api-loader";
+const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org";
+const OSRM_BASE_URL = "https://router.project-osrm.org";
 
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
-
-export const mapsLoader = new Loader({
-  apiKey: GOOGLE_MAPS_API_KEY,
-  version: "weekly",
-  libraries: ["places", "geometry", "marker"],
-});
-
-// Geocode address to lat/lng
-export async function geocodeAddress(address: string) {
-  try {
-    const { Geocoder } = await mapsLoader.importLibrary("geocoding");
-    const geocoder = new Geocoder();
-
-    const result = await geocoder.geocode({ address });
-
-    if (result.results.length === 0) {
-      throw new Error("No results found");
-    }
-
-    const location = result.results[0].geometry.location;
-    const addressComponents = result.results[0].address_components;
-
-    return {
-      lat: location.lat(),
-      lng: location.lng(),
-      formattedAddress: result.results[0].formatted_address,
-      city: addressComponents.find((c) => c.types.includes("locality"))?.long_name,
-      state: addressComponents.find((c) =>
-        c.types.includes("administrative_area_level_1")
-      )?.short_name,
-      zip: addressComponents.find((c) => c.types.includes("postal_code"))?.long_name,
-    };
-  } catch (error) {
-    console.error("Geocoding error:", error);
-    throw error;
-  }
+interface NominatimResult {
+  lat: string;
+  lon: string;
+  display_name: string;
+  address?: {
+    city?: string;
+    town?: string;
+    village?: string;
+    state?: string;
+    postcode?: string;
+  };
 }
 
-// Calculate distance between two points
+// Geocode address to lat/lng using OpenStreetMap Nominatim
+export async function geocodeAddress(address: string) {
+  const params = new URLSearchParams({
+    q: address,
+    format: "jsonv2",
+    addressdetails: "1",
+    limit: "1",
+  });
+
+  const response = await fetch(`${NOMINATIM_BASE_URL}/search?${params.toString()}`, {
+    headers: {
+      "User-Agent": "JoeyMovesPro/1.0 (dispatch@joeymovespro.local)",
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Geocoding failed with status ${response.status}`);
+  }
+
+  const results = (await response.json()) as NominatimResult[];
+
+  if (results.length === 0) {
+    throw new Error("No results found");
+  }
+
+  const result = results[0];
+
+  return {
+    lat: Number.parseFloat(result.lat),
+    lng: Number.parseFloat(result.lon),
+    formattedAddress: result.display_name,
+    city: result.address?.city || result.address?.town || result.address?.village,
+    state: result.address?.state,
+    zip: result.address?.postcode,
+  };
+}
+
+// Calculate distance between two points using OSRM public router
 export async function calculateDistance(
   origin: { lat: number; lng: number },
   destination: { lat: number; lng: number }
 ) {
-  try {
-    const { DistanceMatrixService } = await mapsLoader.importLibrary("routes");
-    const service = new DistanceMatrixService();
+  const coordinates = `${origin.lng},${origin.lat};${destination.lng},${destination.lat}`;
+  const params = new URLSearchParams({
+    overview: "false",
+  });
 
-    const result = await service.getDistanceMatrix({
-      origins: [origin],
-      destinations: [destination],
-      travelMode: google.maps.TravelMode.DRIVING,
-      unitSystem: google.maps.UnitSystem.IMPERIAL,
-    });
-
-    const element = result.rows[0].elements[0];
-
-    if (element.status !== "OK") {
-      throw new Error("Distance calculation failed");
+  const response = await fetch(
+    `${OSRM_BASE_URL}/route/v1/driving/${coordinates}?${params.toString()}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+      cache: "no-store",
     }
+  );
 
-    return {
-      distance: element.distance.value, // meters
-      distanceMiles: element.distance.value * 0.000621371, // miles
-      duration: element.duration.value, // seconds
-      durationMinutes: Math.round(element.duration.value / 60),
-    };
-  } catch (error) {
-    console.error("Distance calculation error:", error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(`Distance calculation failed with status ${response.status}`);
   }
+
+  const data = (await response.json()) as {
+    code: string;
+    routes: Array<{ distance: number; duration: number }>;
+  };
+
+  if (data.code !== "Ok" || data.routes.length === 0) {
+    throw new Error("Distance calculation failed");
+  }
+
+  const route = data.routes[0];
+
+  return {
+    distance: route.distance,
+    distanceMiles: route.distance * 0.000621371,
+    duration: route.duration,
+    durationMinutes: Math.round(route.duration / 60),
+  };
 }
