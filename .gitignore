@@ -1,0 +1,141 @@
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+.turbo/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment files (keep template)
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/**/migration.sql.bak
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+*.log
+logs/
+
+# Testing artifacts
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+.vitest/
+
+# Editor/OS files
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Misc temporary and local files
+.emails/
+uploads/
+tmp/
+temp/
+debug.log
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Security/Certificate files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Deployment / tooling local state
+.vercel/
+.netlify/
+.firebase/
+
+# Package manager lock files (keep one, ignore others)
+# Uncomment the ones you DON'T use:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+# Keep bun.lockb if using Bun
+
+# Sentry
+.sentryclirc
+
+# Stripe CLI
+.stripe/
+
+# Storybook
+storybook-static/
+
+# Service worker
+sw.js
+workbox-*.js
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# PWA
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+public/fallback-*.js
+
+# Generated files
+*.generated.*
+*-generated.*
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Large media files (optional - adjust as needed)
+# *.mp4
+# *.mov
+# *.avi
+# *.mkv
+
+# Development only
+.development/
+dev-only/
+
+# Local configuration
+.local/
+local.config.*
